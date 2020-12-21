@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8 />
+    <title>HLS/DASH Live Stream</title>
+  </head>
+  <body>
+    <h1>HLS Live Stream</h1>
+    <video id="video_hls" controls autoplay style="width:640px;height:480px"></video>
+    <script src="hls.js"></script>
+    <script>
+      var video = document.getElementById('video_hls');
+      var videoSrc = 'streaming/live.m3u8';
+
+      // First check for native browser HLS support
+      if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoSrc;
+      }
+      
+      // If no native HLS support, check if hls.js is supported
+      else if (Hls.isSupported()) {
+        var config = Hls.DefaultConfig;
+        config.liveSyncDurationCount = 1;
+        config.startFragPrefetch = true;
+        console.log(config);
+        var hls = new Hls(config);
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+      }
+    </script>
+    <h1>DASH Live Stream</h1>
+    <video id="video_dash" controls autoplay style="width:640px;height:480px"></video>
+    <script src="dash.js"></script>
+    <script>
+      (function(){
+          var url = "streaming/live.mpd";
+          var player = dashjs.MediaPlayer().create();
+          player.initialize(document.querySelector("#video_dash"), url, true);
+          player.updateSettings({
+            streaming: {
+                lowLatencyEnabled: true,
+                liveDelay: 2,
+                liveCatchup: {
+                    minDrift: 0.05,
+                    playbackRate: 1,
+                    latencyThreshold: 30,    
+                }
+            }
+        });
+      })();
+  </script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>PiCamera H264 Streaming</title>
+</head>
+<body>
+<h1>PiCamera H264 Streaming</h1>
+<div id='viewer'></div>
+<script src='Decoder.js'></script>
+<script src='YUVCanvas.js'></script>
+<script src='Player.js'></script>
+<script>
+  // player
+  window.player = new Player({ useWorker: true, webgl: 'auto', size: { width: 848, height: 480 } })
+  var playerElement = document.getElementById('viewer')
+  playerElement.appendChild(window.player.canvas)
+  // Websocket
+  var wsUri = window.location.protocol.replace(/http/,'ws')+'//'+window.location.hostname+':9000'
+  var ws = new WebSocket(wsUri)
+  ws.binaryType = 'arraybuffer'
+  ws.onopen = function (e) {
+	  console.log('Client connected')
+	  ws.onmessage = function (msg) {
+      // decode stream
+		  window.player.decode(new Uint8Array(msg.data));
+	  }
+  }
+  ws.onclose = function (e) {
+	  console.log('Client disconnected')
+  }
+</script>
+</body>
+</html>
